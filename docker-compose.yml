@@ -1,0 +1,17 @@
+version: '3'
+services:
+
+  opc-postgres:
+    image: postgres
+    container_name: opc-postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5001:5432
+    environment:
+      - POSTGRES_DB=OPC_DATA
+      - POSTGRES_USER=OPC_CLIENT
+      - POSTGRES_PASSWORD=admin
+      
+volumes:
+  pgdata:
