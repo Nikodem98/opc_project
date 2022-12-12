@@ -11,7 +11,7 @@ $ git clone https://github.com/Nikodem98/opc_project.git
 ```bash
 $ docker-compose up
 ```
-4. Now, you need to wait for database system to run.
+4. Now, you need to wait for database system to run (PostreSQL database is running at this point. Use http://localhost:5001 to connect.).
 5. In the terminal enter the cilent-app folder of the project and type the command:
 ```bash
 $ python main.py
