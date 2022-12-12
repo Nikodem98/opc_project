@@ -10,7 +10,7 @@ VALUES(10, 20, 30);
 INSERT INTO ekstruder_value(value)
 VALUES(50);
 
-INSERT INTO piston_rop(value)
+INSERT INTO piston_rod(value)
 VALUES(FALSE);
 
 INSERT INTO pump_pressure(value)
