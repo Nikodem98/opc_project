@@ -7,8 +7,8 @@ VALUES(15);
 INSERT INTO vector_data(value1, value2, value3)
 VALUES(10, 20, 30);
 
-INSERT INTO ekstruder_value(value)
-VALUES(50);
+INSERT INTO ekstruder_value(value1, value2, value3)
+VALUES(10, 20, 30);
 
 INSERT INTO piston_rod(value)
 VALUES(FALSE);

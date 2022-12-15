@@ -3,7 +3,7 @@ import psycopg2
 
 from asyncua.sync import Client
 
-def conn(val):
+def conn(val, sql, multi):
     connection = None
     try:
         print('Connecting to the postgreSQL database ...')
@@ -14,17 +14,15 @@ def conn(val):
             password="admin",
             port="5001"
         )
-
         # create a cursor
         crsr = connection.cursor()
-        print('PostgreSQL database version: ')
-        crsr.execute('SELECT version()')
-        db_version = crsr.fetchone()
-        print(db_version)
-        crsr.execute('SELECT * FROM tempe2')
-        index = len(crsr.fetchall())
-        crsr.execute('INSERT INTO tempe2 (id, temperature) VALUES (%s, %s)', (index, val))
+        print(val)
+        if multi:
+            crsr.execute(sql, (val))
+        else:
+            crsr.execute(sql, ([val]))
         connection.commit()
+        print('Value saved')
         crsr.close()
     except(Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -33,26 +31,67 @@ def conn(val):
             connection.close()
             print('Database connection terminated.')
 
-class SubHandler(object):
-    """
-    Subscription Handler. To receive events from server for a subscription
-    """
-
+class ActuatorPositionHandler(object):
     def datachange_notification(self, node, val, data):
-        conn(val)
-        print("Python: New value", val)
+        conn(val, 'INSERT INTO actuator_position(value) VALUES(%s);', False)
+        print("Python: New actuator position value", val)
 
-    def event_notification(self, event):
-        print("Python: New event", event)
+class EkstruderValueHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO ekstruder_value(value1, value2, value3) VALUES(%s,%s,%s);', True)
+        print("Python: New ekstruder value", val)
+
+class LevelSensorHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO level_sensor(value) VALUES(%s);', False)
+        print("Python: New level sensor value", val)
+
+class PistonRodHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO piston_rod(value) VALUES(%s);', False)
+        print("Python: New piston rod value", val)
+
+class PumpPressureHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO pump_pressure(value) VALUES(%s);', False)
+        print("Python: New pump pressure value", val)
+
+class TemperatureHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO temperature_sensor(value) VALUES(%s);', False)
+        print("Python: New temperature value", val)
+
+class WorkTimeHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO work_time(value) VALUES(%s);', False)
+        print("Python: New temperature value", val)
+
+class VectorDataHandler(object):
+    def datachange_notification(self, node, val, data):
+        conn(val, 'INSERT INTO vector_data(value1, value2, value3) VALUES(%s,%s,%s);', True)
+        print("Python: vector data value", val)
+
+
 
 async def main():
     client = Client("opc.tcp://localhost:1888")
     client.connect()
-    tag1 = client.get_node("i=13;ns=2")
-    print(f"tag1 is: {tag1} with value {tag1.get_value()}")
+    actuatorTag = client.get_node("ns=2;i=16")
+    ekstruderTag = client.get_node("ns=2;i=10")
+    levelTag = client.get_node("ns=2;i=2")
+    pistonTag = client.get_node("ns=2;i=12")
+    pumpTag = client.get_node("ns=2;i=14")
+    temperatureTag = client.get_node("ns=2;i=4")
+    timeTag = client.get_node("ns=2;i=8")
+    vectorTag = client.get_node("ns=2;i=6")
 
-    handler = SubHandler()
-    sub = client.create_subscription(500, handler)
-    handle1 = sub.subscribe_data_change(tag1)
+    client.create_subscription(500, ActuatorPositionHandler()).subscribe_data_change(actuatorTag)
+    client.create_subscription(500, EkstruderValueHandler()).subscribe_data_change(ekstruderTag)
+    client.create_subscription(500, LevelSensorHandler()).subscribe_data_change(levelTag)
+    client.create_subscription(500, PistonRodHandler()).subscribe_data_change(pistonTag)
+    client.create_subscription(500, PumpPressureHandler()).subscribe_data_change(pumpTag)
+    client.create_subscription(500, TemperatureHandler()).subscribe_data_change(temperatureTag)
+    client.create_subscription(500, WorkTimeHandler()).subscribe_data_change(timeTag)
+    client.create_subscription(500, VectorDataHandler()).subscribe_data_change(vectorTag)
 
 asyncio.run(main())

@@ -1,12 +1,14 @@
 CREATE TABLE IF NOT EXISTS actuator_position (
   id SERIAL PRIMARY KEY,
-  value INT NOT NULL,
+  value FLOAT NOT NULL,
   ts TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS ekstruder_value (
   id SERIAL PRIMARY KEY,
-  value INT NOT NULL,
+  value1 FLOAT NOT NULL,
+  value2 FLOAT NOT NULL,
+  value3 FLOAT NOT NULL,
   ts TIMESTAMP
 );
 
@@ -24,7 +26,7 @@ CREATE TABLE IF NOT EXISTS piston_rod (
 
 CREATE TABLE IF NOT EXISTS pump_pressure (
   id SERIAL PRIMARY KEY,
-  value INT NOT NULL,
+  value FLOAT NOT NULL,
   ts TIMESTAMP
 );
 
