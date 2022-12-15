@@ -3,7 +3,7 @@ import psycopg2
 
 from asyncua.sync import Client
 
-def conn(val, sql, multi):
+def conn(val, timestamp, sql, multi):
     connection = None
     try:
         print('Connecting to the postgreSQL database ...')
@@ -18,9 +18,9 @@ def conn(val, sql, multi):
         crsr = connection.cursor()
         print(val)
         if multi:
-            crsr.execute(sql, (val))
+            crsr.execute(sql, (val[0], val[1], val[2], timestamp))
         else:
-            crsr.execute(sql, ([val]))
+            crsr.execute(sql, (val, timestamp))
         connection.commit()
         print('Value saved')
         crsr.close()
@@ -34,43 +34,42 @@ def conn(val, sql, multi):
 class ActuatorPositionHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New actuator position value", val)
-        conn(val, 'INSERT INTO actuator_position(value) VALUES(%s);', False)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO actuator_position(value,ts) VALUES(%s, %s);', False)
 
 class EkstruderValueHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New ekstruder value", val)
-        conn(val, 'INSERT INTO ekstruder_value(value1, value2, value3) VALUES(%s,%s,%s);', True)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO ekstruder_value(value1, value2, value3, ts) VALUES(%s,%s,%s, %s);', True)
 
 class LevelSensorHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New level sensor value", val)
-        conn(val, 'INSERT INTO level_sensor(value) VALUES(%s);', False)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO level_sensor(value, ts) VALUES(%s, %s);', False)
 
 class PistonRodHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New piston rod value", val)
-        conn(val, 'INSERT INTO piston_rod(value) VALUES(%s);', False)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO piston_rod(value, ts) VALUES(%s, %s);', False)
 
 class PumpPressureHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New pump pressure value", val)
-        conn(val, 'INSERT INTO pump_pressure(value) VALUES(%s);', False)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO pump_pressure(value, ts) VALUES(%s, %s);', False)
 
 class TemperatureHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New temperature value", val)
-        conn(val, 'INSERT INTO temperature_sensor(value) VALUES(%s);', False)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO temperature_sensor(value, ts) VALUES(%s, %s);', False)
 
 class WorkTimeHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: New temperature value", val)
-        conn(val, 'INSERT INTO work_time(value) VALUES(%s);', False)
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO work_time(value, ts) VALUES(%s, %s);', False)
 
 class VectorDataHandler(object):
     def datachange_notification(self, node, val, data):
         print("Python: vector data value", val)
-        conn(val, 'INSERT INTO vector_data(value1, value2, value3) VALUES(%s,%s,%s);', True)
-
+        conn(val, data.monitored_item.Value.SourceTimestamp, 'INSERT INTO vector_data(value1, value2, value3) VALUES(%s,%s,%s);', True)
 
 
 async def main():
